@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+  <head>
+    <script src="https://pixijs.download/release/pixi.js"></script>
+  </head>
+  <body>
+    <script type="module">
+        const app = new PIXI.Application()
+        await app.init({width:600,height:360,backgroundColor:"#1d192a"})
+        document.body.appendChild(app.canvas)
+
+        await PIXI.Assets.load("https://i.imgur.com/skSpO.jpeg")
+        let sprite = PIXI.Sprite.from("https://i.imgur.com/skSpO.jpeg")
+        sprite.width=400
+        sprite.height = 300
+        sprite.x=100
+        app.stage.addChild(sprite)
+
+        let elapsed =0.0
+        app.ticker.add((ticker)=>{
+            elapsed+=ticker.deltaTime
+            sprite.y=30+Math.cos(elapsed/8.0)*20
+        })
+    </script>
+  </body>
+</html>
