@@ -25,6 +25,17 @@
                     this.v = v;
                     this.circle = circle;
                 }
+
+                remove() {
+                    app.stage.removeChild(this.circle);
+                }
+
+                collide(other) {
+                    const dx = other.circle.x - this.circle.x;
+                    const dy = other.circle.y - this.circle.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    return distance < this.radius + other.radius;
+                }
             }
 
             class Monster extends Circle {
@@ -49,6 +60,10 @@
             class Player extends Circle {
                 constructor(color, radius, v) {
                     super(color, radius, v);
+                    this.reset();
+                }
+
+                reset() {
                     this.circle.x = w / 2;
                     this.circle.y = h / 2;
                     this.speed = 2;
@@ -59,6 +74,13 @@
                     const y = this.circle.y + this.v.y;
                     this.circle.x = Math.min(Math.max(x, this.radius), w - this.radius);
                     this.circle.y = Math.min(Math.max(y, this.radius), h - this.radius);
+
+                    monsters.forEach((monster) => {
+                        if (this.collide(monster)) {
+                            reset();
+                            return;
+                        }
+                    });
                 }
             }
 
@@ -126,6 +148,15 @@
 
             setupControls();
             addMonster();
+
+            function reset() {
+                monsters.forEach((monster) => {
+                    monster.remove();
+                });
+                monsters = [];
+                addMonster();
+                player.reset();
+            }
 
             app.ticker.add((ticker) => {
                 player.update();
