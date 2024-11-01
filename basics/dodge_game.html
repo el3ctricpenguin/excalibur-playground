@@ -7,7 +7,7 @@
     <body>
         <script type="module">
             // ref: https://medium.com/swlh/a-game-any-web-dev-can-build-in-10-mins-using-pixijs-47f8bcd85700
-            let w = 512,
+            const w = 512,
                 h = 512;
             const app = new PIXI.Application();
             await app.init({ width: w, height: h, antialias: true, backgroundColor: "#456268" });
@@ -15,7 +15,7 @@
 
             class Circle {
                 constructor(color, radius, v) {
-                    let circle = new PIXI.Graphics();
+                    const circle = new PIXI.Graphics();
                     circle.circle(0, 0, radius).fill(color);
                     circle.x = radius;
                     circle.y = radius;
@@ -81,10 +81,40 @@
                             return;
                         }
                     });
+
+                    if (this.collide(coin)) {
+                        coin.random();
+                        addMonster();
+                        this.speed *= 1.1;
+                        levelCount++;
+                        updateUI();
+                    }
                 }
             }
 
-            let pressed = {};
+            class Coin extends Circle {
+                constructor(color, radius, v) {
+                    super(color, radius, v);
+                    this.random();
+                    this.updateStyle(color);
+                }
+
+                random() {
+                    this.circle.x = this.radius + (w - this.radius * 2) * Math.random();
+                    this.circle.y = this.radius + (h - this.radius * 2) * Math.random();
+                }
+
+                update() {
+                    let s = 1 + Math.sin(new Date() * 0.01) * 0.2;
+                    this.circle.scale.set(s, s);
+                }
+                updateStyle(color) {
+                    this.circle.clear();
+                    this.circle.circle(0, 0, this.radius).stroke({ width: 1, color: color });
+                }
+            }
+
+            const pressed = {};
 
             function onKeyDown(event) {
                 switch (event.key) {
@@ -143,8 +173,8 @@
 
             let monsters = [];
             const player = new Player("#ffffff", 5, { x: 0, y: 0 });
-            let coin;
-            let coins;
+            const coin = new Coin("#ffffff", 10, { x: 0, y: 0 });
+            let levelCount = 0;
 
             setupControls();
             addMonster();
@@ -156,11 +186,31 @@
                 monsters = [];
                 addMonster();
                 player.reset();
+                levelCount = 0;
+                updateUI();
+            }
+
+            const text = new PIXI.Text({
+                text: `Level ${levelCount}`,
+                style: {
+                    fontFamily: "monospace",
+                    fontSize: 20,
+                    fill: "#ffffff",
+                },
+            });
+            text.x = w / 30;
+            text.y = h / 30;
+            app.stage.addChild(text);
+            app.stage.setChildIndex(text, app.stage.children.length - 1);
+
+            function updateUI() {
+                text.text = `Level ${levelCount}`;
+                app.stage.setChildIndex(text, app.stage.children.length - 1);
             }
 
             app.ticker.add((ticker) => {
                 player.update();
-                // coin.update();
+                coin.update();
                 monsters.forEach((monster) => {
                     monster.update();
                 });
